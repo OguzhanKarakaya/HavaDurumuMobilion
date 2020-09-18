@@ -9,7 +9,6 @@
 import UIKit
 
 class AddCityCell: UITableViewCell {
-
     @IBOutlet var lblAddCity: UILabel!
     var cityId: String?
     var cityArray = [String]()
@@ -25,6 +24,10 @@ class AddCityCell: UITableViewCell {
         // Configure the view for the selected state
     }
     
+    /*
+     Kullanıcının seçtiği şehirler kaydedilir.
+     Uygulama daha sonra açıldığında verilerin kaybolmaması amacıyla UserDefaults kullanılmıştır.
+     */
     @IBAction func btnAddCity(_ sender: Any) {
         let oldArray = userDefaults.stringArray(forKey: selectedCitiesUserDefaults)
         if oldArray != nil {
@@ -35,5 +38,4 @@ class AddCityCell: UITableViewCell {
         self.cityArray.append(cityId!)
         userDefaults.set(self.cityArray, forKey: selectedCitiesUserDefaults)
     }
-
 }

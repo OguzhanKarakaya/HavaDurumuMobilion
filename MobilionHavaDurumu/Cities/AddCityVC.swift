@@ -11,7 +11,6 @@ import UIKit
 class AddCityVC: UIViewController {
     
     var cities = [CityModel]()
-    var headerArray = [String]()
     var newArray = [CityModel]()
     var searchingCityList = [CityModel]()
     var searching = false
@@ -45,8 +44,6 @@ class AddCityVC: UIViewController {
 }
 
 extension AddCityVC: UITableViewDelegate, UITableViewDataSource {
-    
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if searching {
             return searchingCityList.count
@@ -77,3 +74,4 @@ extension AddCityVC: UISearchBarDelegate {
         tableView.reloadData()
     }
 }
+

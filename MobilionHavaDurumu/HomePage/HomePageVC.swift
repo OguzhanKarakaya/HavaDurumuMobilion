@@ -7,9 +7,6 @@
 //
 
 import UIKit
-import Foundation
-import SwiftyJSON
-import Alamofire
 
 class HomePageVC: UIViewController {
 
@@ -50,8 +47,8 @@ class HomePageVC: UIViewController {
         self.tableView.separatorColor = UIColor.gray
         tableView.separatorStyle = UITableViewCell.SeparatorStyle.singleLine
     
-        emptyView.isHidden = true
-        formatterHumanRead.dateFormat = "dd.MM.yyyy"
+        emptyView.isHidden = false
+        formatterHumanRead.dateFormat = "dd/MM/yyyy"
         formatter.dateFormat = "yyyy-MM-dd"
         self.todaysDateHumanRead = formatterHumanRead.string(from: date)
         self.todaysDate = formatter.string(from: date)
@@ -72,6 +69,10 @@ class HomePageVC: UIViewController {
         return weekDay
     }
     
+    /*
+     Kullanıcının daha önceden seçtiği şehirler olup olmadığı kontrol edilir.
+     Varsa ona göre işlemler başlar
+     */
     func getSelectedCities() {
         selectedCitiesArray.removeAll()
         self.selectedCitiesArray = userDefaults.stringArray(forKey: selectedCitiesUserDefaults) ?? ["empty"]
@@ -80,6 +81,9 @@ class HomePageVC: UIViewController {
             for i in 0..<self.selectedCitiesArray.count {
                 if selectedCitiesArray[0] != "empty" {
                     getInfos(selectedCityId: selectedCitiesArray[i])
+                } else {
+                    CustomIndicator.hideActivityIndicator(uiView: self.view)
+                    emptyView.isHidden = false
                 }
             }
         } else {
@@ -88,6 +92,9 @@ class HomePageVC: UIViewController {
         }
     }
     
+    /*
+     Veriler servisten çekilir ve model sınıfına entegre edilir.
+     */
     func getInfos(selectedCityId: String) {
         self.weatherInfoArray.removeAll()
         self.selectedCitiesNames.removeAll()
@@ -147,17 +154,12 @@ class HomePageVC: UIViewController {
         self.nextDaysNames.append(dayInWeek)
     }
     
-    func kelvinToCelcius(temp: NSNumber) -> String{
-        let value = String(format: "%.0f", temp.doubleValue - 273.15) + degree
-        return value
-    }
-    
     func getForecastWeather() {
         let forecast = self.weatherInfoArray[0].main
         let weather = self.weatherInfoArray[0].weather[0]
-        self.lblTemp.text = kelvinToCelcius(temp: (forecast?.temp)!)
-        self.lblTempHighest.text = kelvinToCelcius(temp: (forecast?.temp_max)!)
-        self.lblTempLowest.text = kelvinToCelcius(temp: (forecast?.temp_min)!)
+        self.lblTemp.text = SessionParameters.shared.kelvinToCelcius(temp: (forecast?.temp)!)
+        self.lblTempHighest.text = SessionParameters.shared.kelvinToCelcius(temp: (forecast?.temp_max)!)
+        self.lblTempLowest.text = SessionParameters.shared.kelvinToCelcius(temp: (forecast?.temp_min)!)
         self.lblDate.text = self.todaysDateHumanRead
         self.lblTempDefinition.text = weather.description
         
@@ -197,20 +199,20 @@ extension HomePageVC: UITableViewDelegate, UITableViewDataSource {
         if self.otherDaysDetailArray.count > 0 {
             switch indexPath.row {
             case 0:
-                cell.lblLowest.text = kelvinToCelcius(temp: otherDaysDetailArray[0].main!.temp_min!)
-                cell.lblHighest.text = kelvinToCelcius(temp: otherDaysDetailArray[0].main!.temp_max!)
+                cell.lblLowest.text = SessionParameters.shared.kelvinToCelcius(temp: otherDaysDetailArray[0].main!.temp_min!)
+                cell.lblHighest.text = SessionParameters.shared.kelvinToCelcius(temp: otherDaysDetailArray[0].main!.temp_max!)
             case 1:
-                cell.lblLowest.text = kelvinToCelcius(temp: otherDaysDetailArray[0].main!.temp_min!)
-                cell.lblHighest.text = kelvinToCelcius(temp: otherDaysDetailArray[8].main!.temp_max!)
+                cell.lblLowest.text = SessionParameters.shared.kelvinToCelcius(temp: otherDaysDetailArray[0].main!.temp_min!)
+                cell.lblHighest.text = SessionParameters.shared.kelvinToCelcius(temp: otherDaysDetailArray[8].main!.temp_max!)
             case 2 :
-                cell.lblLowest.text = kelvinToCelcius(temp: otherDaysDetailArray[0].main!.temp_min!)
-                cell.lblHighest.text = kelvinToCelcius(temp: otherDaysDetailArray[16].main!.temp_max!)
+                cell.lblLowest.text = SessionParameters.shared.kelvinToCelcius(temp: otherDaysDetailArray[0].main!.temp_min!)
+                cell.lblHighest.text = SessionParameters.shared.kelvinToCelcius(temp: otherDaysDetailArray[16].main!.temp_max!)
             case 3 :
-                cell.lblLowest.text = kelvinToCelcius(temp: otherDaysDetailArray[0].main!.temp_min!)
-                cell.lblHighest.text = kelvinToCelcius(temp: otherDaysDetailArray[24].main!.temp_max!)
+                cell.lblLowest.text = SessionParameters.shared.kelvinToCelcius(temp: otherDaysDetailArray[0].main!.temp_min!)
+                cell.lblHighest.text = SessionParameters.shared.kelvinToCelcius(temp: otherDaysDetailArray[24].main!.temp_max!)
             case 4:
-                cell.lblLowest.text = kelvinToCelcius(temp: otherDaysDetailArray[0].main!.temp_min!)
-                cell.lblHighest.text = kelvinToCelcius(temp: otherDaysDetailArray[32].main!.temp_max!)
+                cell.lblLowest.text = SessionParameters.shared.kelvinToCelcius(temp: otherDaysDetailArray[0].main!.temp_min!)
+                cell.lblHighest.text = SessionParameters.shared.kelvinToCelcius(temp: otherDaysDetailArray[32].main!.temp_max!)
             default:
                 cell.lblLowest.text = ""
                 cell.lblHighest.text = ""
@@ -269,11 +271,7 @@ extension HomePageVC: UICollectionViewDelegate, UICollectionViewDataSource {
             self.lblWind.text = (dailyDetail.wind?.speed)!.stringValue + " mhs/s"
             self.lblGorunurluk.text = (dailyDetail.visibility)!.stringValue + " m"
         } else {
-            let cityWeahterDetail = self.dailyDetailArray[indexPath.row]
-            self.lblHumidity.text = "%" + (cityWeahterDetail.main?.humidity)!.stringValue
-            self.lblUV.text = (cityWeahterDetail.main?.temp_kf)?.stringValue
-            self.lblWind.text = (cityWeahterDetail.wind?.speed)!.stringValue + " mhs/s"
-            self.lblGorunurluk.text = (cityWeahterDetail.visibility)!.stringValue + " m"
+            
         }
     }
 }
